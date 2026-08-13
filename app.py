@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
+# 1. Configuração da página
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide")
 
 # 2. Função para converter a imagem em código para injetar no HTML
@@ -12,28 +12,26 @@ def carregar_logo(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
             conteudo = arquivo.read()
             b64 = base64.b64encode(conteudo).decode()
-            # Retorna a tag da imagem com um design moderno (bordas arredondadas e sombra)
-            return f'<img src="data:image/png;base64,{b64}" style="width: 45px; height: 45px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">'
-    return '<span>🤟</span>' # Fallback: se a imagem não carregar, volta para o emoji
+            return f'<img src="data:image/png;base64,{b64}" style="width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">'
+    return '<span>🤟</span>'
 
-# Processa a sua logo
 logo_html = carregar_logo("Logo_Libras.png")
 
-# Removemos o padding padrão do Streamlit para o app ocupar a tela toda
+# Removemos o padding padrão do Streamlit para ocupar a tela toda
 st.markdown("""
     <style>
-        .block-container { padding-top: 1rem; padding-bottom: 0rem; max-width: 100%; }
+        .block-container { padding-top: 0rem; padding-bottom: 0rem; padding-left: 0rem; padding-right: 0rem; max-width: 100%; }
         header { visibility: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
-# CÓDIGO DO APLICATIVO WEB (HTML + CSS + JS)
+# CÓDIGO DO APLICATIVO WEB (HTML + CSS Responsivo + JS)
 codigo_html = """
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -42,12 +40,13 @@ codigo_html = """
         body { 
             background-color: #f3f4f6; 
             color: #1f2937; 
-            height: 90vh; 
+            height: 100vh; 
             display: flex;
             overflow: hidden;
+            flex-direction: row; /* Padrão para Desktop */
         }
 
-        /* BARRA LATERAL (MENU) */
+        /* BARRA LATERAL (MENU) - Desktop */
         .sidebar {
             width: 260px;
             background-color: #ffffff;
@@ -65,7 +64,7 @@ codigo_html = """
             align-items: center;
             gap: 12px;
             color: #10b981;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
         }
 
@@ -95,6 +94,7 @@ codigo_html = """
             position: relative;
             display: flex;
             flex-direction: column;
+            height: 100vh;
         }
 
         .aba-conteudo {
@@ -107,11 +107,11 @@ codigo_html = """
         .aba-conteudo.active { display: flex; }
 
         .header-aba {
-            padding-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .header-aba h2 { color: #111827; }
+        .header-aba h2 { color: #111827; font-size: 20px;}
         .header-aba p { color: #6b7280; font-size: 14px; margin-top: 5px; }
 
         /* MÓDULO 1: CHAT UNIFICADO */
@@ -124,11 +124,12 @@ codigo_html = """
             flex-direction: column;
             overflow: hidden;
             border: 1px solid #e5e7eb;
+            margin-bottom: 10px;
         }
 
         .chat-history {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -137,18 +138,15 @@ codigo_html = """
         }
 
         .mensagem {
-            max-width: 70%;
-            padding: 12px 18px;
+            max-width: 80%;
+            padding: 12px 16px;
             border-radius: 16px;
             font-size: 15px;
             line-height: 1.4;
             cursor: pointer;
             position: relative;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
         }
-
-        .mensagem:active { transform: scale(0.98); }
 
         .msg-p1 {
             background-color: #d1fae5;
@@ -168,9 +166,10 @@ codigo_html = """
         .chat-inputs {
             display: flex;
             background: #ffffff;
-            padding: 15px;
-            gap: 15px;
+            padding: 12px;
+            gap: 10px;
             border-top: 1px solid #e5e7eb;
+            flex-direction: row; /* Desktop lado a lado */
         }
 
         .input-group {
@@ -178,9 +177,8 @@ codigo_html = """
             display: flex;
             background: #f3f4f6;
             border-radius: 25px;
-            padding: 5px 5px 5px 15px;
+            padding: 4px 4px 4px 15px;
             border: 1px solid transparent;
-            transition: border 0.2s;
         }
         
         .input-group:focus-within { border-color: #10b981; background: #ffffff; }
@@ -204,14 +202,12 @@ codigo_html = """
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
         }
-        .btn-enviar:hover { background: #059669; }
 
         /* MÓDULO 2 & 3: DICIONÁRIO E FRASES RÁPIDAS */
         .painel-centralizado {
             background: #ffffff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             border: 1px solid #e5e7eb;
@@ -219,89 +215,133 @@ codigo_html = """
         }
 
         .input-grande {
-            width: 80%;
+            width: 100%;
             max-width: 500px;
-            padding: 15px 20px;
-            font-size: 18px;
+            padding: 12px 15px;
+            font-size: 16px;
             border: 2px solid #d1fae5;
             border-radius: 30px;
             outline: none;
-            transition: border 0.3s;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .input-grande:focus { border-color: #10b981; }
 
         .texto-traducao {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #065f46;
-            padding: 20px;
+            padding: 15px;
             background: #ecfdf5;
             border-radius: 12px;
             display: inline-block;
-            margin-top: 20px;
             cursor: pointer;
             border: 1px dashed #10b981;
         }
 
-        /* GRID DE FRASES RÁPIDAS */
         .grid-frases {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
         }
 
         .card-frase {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
             color: #374151;
-            transition: all 0.2s;
+            font-size: 14px;
+            text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .card-frase:hover {
-            border-color: #10b981;
-            background: #f0fdf4;
-            color: #10b981;
-            transform: translateY(-2px);
-        }
+        /* ========================================================= */
+        /* MEDIA QUERIES (A MÁGICA PARA O CELULAR)                   */
+        /* ========================================================= */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; /* Muda a direção para coluna em telas pequenas */
+            }
 
-        .dica-duplo-clique {
-            background: #1e293b;
-            color: #f8fafc;
-            font-size: 12px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
+            .main-content {
+                height: calc(100vh - 65px); /* Dá espaço para o menu inferior */
+                padding-bottom: 0;
+            }
+
+            /* Transforma o menu lateral em menu inferior flutuante */
+            .sidebar {
+                width: 100%;
+                height: 65px;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0;
+                border-right: none;
+                border-top: 1px solid #e5e7eb;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                z-index: 100;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            }
+
+            .logo-area {
+                display: none; /* Esconde a logo para liberar espaço na barra inferior */
+            }
+
+            .menu-item {
+                flex: 1;
+                flex-direction: column; /* Ícone em cima, texto embaixo */
+                justify-content: center;
+                padding: 5px;
+                font-size: 12px;
+                gap: 4px;
+                border-left: none;
+                border-top: 3px solid transparent;
+            }
+
+            .menu-item.active {
+                border-left: none;
+                border-top: 3px solid #10b981; /* O destaque ativo passa para cima */
+                background-color: transparent;
+            }
+
+            .aba-conteudo {
+                padding: 10px; /* Reduz margens na tela pequena */
+            }
+
+            /* Empilha as caixas de digitação para não ficarem espremidas */
+            .chat-inputs {
+                flex-direction: column; 
+            }
+            
+            .mensagem {
+                max-width: 90%;
+            }
         }
 
     </style>
 </head>
 <body>
 
-    <!-- BARRA LATERAL -->
+    <!-- BARRA LATERAL / INFERIOR (Depende do aparelho) -->
     <div class="sidebar">
         <div class="logo-area">
-            <!-- Marcador que será substituído pela imagem processada em Python -->
             [[MARCADOR_LOGO]] LIBRAS Pro
         </div>
         
         <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
-            <span>💬</span> Conversa
+            <span style="font-size: 20px;">💬</span>
+            <span>Conversa</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-dicionario', this)">
-            <span>📖</span> Dicionário
+            <span style="font-size: 20px;">📖</span>
+            <span>Dicionário</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-frases', this)">
-            <span>⚡</span> Acesso Rápido
+            <span style="font-size: 20px;">⚡</span>
+            <span>Rápido</span>
         </div>
     </div>
 
@@ -311,8 +351,8 @@ codigo_html = """
         <!-- ABA 1: CHAT UNIFICADO -->
         <div id="aba-chat" class="aba-conteudo active">
             <div class="header-aba">
-                <h2>Comunicação Simultânea</h2>
-                <p>Usem as caixas abaixo para conversar. Dê um duplo clique na mensagem para o Avatar traduzir.</p>
+                <h2>Comunicação</h2>
+                <p>Usem as caixas abaixo. Duplo clique para traduzir.</p>
             </div>
             
             <div class="chat-container">
@@ -322,11 +362,11 @@ codigo_html = """
                 
                 <div class="chat-inputs">
                     <div class="input-group">
-                        <input type="text" id="input-p1" placeholder="Pessoa 1 digita aqui..." onkeypress="teclaEnter(event, 'p1')">
+                        <input type="text" id="input-p1" placeholder="Pessoa 1 digita..." onkeypress="teclaEnter(event, 'p1')">
                         <button class="btn-enviar" onclick="enviarChat('p1')">➤</button>
                     </div>
                     <div class="input-group">
-                        <input type="text" id="input-p2" placeholder="Pessoa 2 digita aqui..." onkeypress="teclaEnter(event, 'p2')">
+                        <input type="text" id="input-p2" placeholder="Pessoa 2 digita..." onkeypress="teclaEnter(event, 'p2')">
                         <button class="btn-enviar" onclick="enviarChat('p2')" style="background-color: #374151;">➤</button>
                     </div>
                 </div>
@@ -336,15 +376,14 @@ codigo_html = """
         <!-- ABA 2: DICIONÁRIO -->
         <div id="aba-dicionario" class="aba-conteudo">
             <div class="header-aba">
-                <h2>Dicionário de Sinais</h2>
-                <p>Pesquise palavras isoladas para ver como são feitas em Libras.</p>
+                <h2>Dicionário</h2>
+                <p>Pesquise palavras isoladas.</p>
             </div>
             
             <div class="painel-centralizado">
-                <input type="text" id="input-dicionario" class="input-grande" placeholder="Digite uma palavra (ex: Obrigado)..." oninput="atualizarDicionario()">
+                <input type="text" id="input-dicionario" class="input-grande" placeholder="Ex: Obrigado..." oninput="atualizarDicionario()">
                 <br>
-                <div class="dica-duplo-clique">💡 Dê um duplo clique na palavra abaixo para ver a tradução</div>
-                <br>
+                <div style="font-size:12px; color:#6b7280; margin-bottom:10px;">💡 Duplo clique abaixo para traduzir</div>
                 <div id="resultado-dicionario" class="texto-traducao">...</div>
             </div>
         </div>
@@ -353,18 +392,18 @@ codigo_html = """
         <div id="aba-frases" class="aba-conteudo">
             <div class="header-aba">
                 <h2>Acesso Rápido</h2>
-                <p>Dê um duplo clique nos cartões abaixo para comunicar rapidamente frases cotidianas.</p>
+                <p>Duplo clique para comunicar rápido.</p>
             </div>
             
             <div class="grid-frases">
                 <div class="card-frase">Bom dia! Tudo bem?</div>
                 <div class="card-frase">Qual é o seu nome?</div>
-                <div class="card-frase">Pode me ajudar, por favor?</div>
+                <div class="card-frase">Pode me ajudar?</div>
                 <div class="card-frase">Eu não entendi.</div>
-                <div class="card-frase">Muito obrigado!</div>
-                <div class="card-frase">Com licença.</div>
+                <div class="card-frase">Muito obrigado</div>
+                <div class="card-frase">Com licença</div>
                 <div class="card-frase">Onde fica o banheiro?</div>
-                <div class="card-frase">Estou com uma dúvida.</div>
+                <div class="card-frase">Tenho uma dúvida</div>
             </div>
         </div>
 
@@ -394,16 +433,21 @@ codigo_html = """
             elementoClicado.classList.add('active');
         }
 
+        function limparTexto(texto) {
+            return texto.replace(/[.,!?]/g, '').trim();
+        }
+
         function enviarChat(pessoa) {
             const input = document.getElementById('input-' + pessoa);
-            const texto = input.value.trim();
-            if(texto === '') return;
+            const texto = input.value;
+            
+            if(texto.trim() === '') return;
 
             const chatBox = document.getElementById('chat-box');
             const novaMsg = document.createElement('div');
             
             novaMsg.className = 'mensagem ' + (pessoa === 'p1' ? 'msg-p1' : 'msg-p2');
-            novaMsg.textContent = texto;
+            novaMsg.textContent = limparTexto(texto);
 
             chatBox.appendChild(novaMsg);
             input.value = '';
@@ -418,7 +462,7 @@ codigo_html = """
         function atualizarDicionario() {
             const texto = document.getElementById('input-dicionario').value;
             const resultado = document.getElementById('resultado-dicionario');
-            resultado.textContent = texto === '' ? '...' : texto;
+            resultado.textContent = texto.trim() === '' ? '...' : limparTexto(texto);
         }
     </script>
 </body>
@@ -428,5 +472,5 @@ codigo_html = """
 # Injeta a tag de imagem pronta no lugar do marcador dentro do HTML
 codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
-# Renderiza todo o aplicativo em altura total
-components.html(codigo_html, height=850, scrolling=False)
+# Renderiza com uma altura alta para preencher tudo na tela de celulares
+components.html(codigo_html, height=1000, scrolling=False)
