@@ -1,8 +1,23 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import base64
+import os
 
-# Configuração da página em tela cheia para parecer um app nativo
-st.set_page_config(page_title="App Libras PRO", page_icon="🤟", layout="wide")
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
+st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide")
+
+# 2. Função para converter a imagem em código para injetar no HTML
+def carregar_logo(caminho_arquivo):
+    if os.path.exists(caminho_arquivo):
+        with open(caminho_arquivo, "rb") as arquivo:
+            conteudo = arquivo.read()
+            b64 = base64.b64encode(conteudo).decode()
+            # Retorna a tag da imagem com um design moderno (bordas arredondadas e sombra)
+            return f'<img src="data:image/png;base64,{b64}" style="width: 45px; height: 45px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">'
+    return '<span>🤟</span>' # Fallback: se a imagem não carregar, volta para o emoji
+
+# Processa a sua logo
+logo_html = carregar_logo("Logo_Libras.png")
 
 # Removemos o padding padrão do Streamlit para o app ocupar a tela toda
 st.markdown("""
@@ -48,13 +63,11 @@ codigo_html = """
             padding: 0 20px 30px 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: #10b981;
             font-size: 22px;
             font-weight: 700;
         }
-
-        .logo-area span { font-size: 28px; }
 
         .menu-item {
             padding: 15px 25px;
@@ -137,7 +150,6 @@ codigo_html = """
 
         .mensagem:active { transform: scale(0.98); }
 
-        /* Estilos neutros para não rotular as pessoas */
         .msg-p1 {
             background-color: #d1fae5;
             color: #065f46;
@@ -259,7 +271,6 @@ codigo_html = """
             transform: translateY(-2px);
         }
 
-        /* Dica universal */
         .dica-duplo-clique {
             background: #1e293b;
             color: #f8fafc;
@@ -279,7 +290,8 @@ codigo_html = """
     <!-- BARRA LATERAL -->
     <div class="sidebar">
         <div class="logo-area">
-            <span>🤟</span> LIBRAS Pro
+            <!-- Marcador que será substituído pela imagem processada em Python -->
+            [[MARCADOR_LOGO]] LIBRAS Pro
         </div>
         
         <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
@@ -309,12 +321,10 @@ codigo_html = """
                 </div>
                 
                 <div class="chat-inputs">
-                    <!-- Input Pessoa 1 -->
                     <div class="input-group">
                         <input type="text" id="input-p1" placeholder="Pessoa 1 digita aqui..." onkeypress="teclaEnter(event, 'p1')">
                         <button class="btn-enviar" onclick="enviarChat('p1')">➤</button>
                     </div>
-                    <!-- Input Pessoa 2 -->
                     <div class="input-group">
                         <input type="text" id="input-p2" placeholder="Pessoa 2 digita aqui..." onkeypress="teclaEnter(event, 'p2')">
                         <button class="btn-enviar" onclick="enviarChat('p2')" style="background-color: #374151;">➤</button>
@@ -370,26 +380,20 @@ codigo_html = """
     
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
     <script>
-        // Inicializa o tradutor apenas uma vez
         new window.VLibras.Widget('https://vlibras.gov.br/app');
 
-        // FUNÇÃO DE NAVEGAÇÃO DAS ABAS
         function mudarAba(idAba, elementoClicado) {
-            // Esconde todas as abas
             document.querySelectorAll('.aba-conteudo').forEach(aba => {
                 aba.classList.remove('active');
             });
-            // Remove o destaque de todos os botões do menu
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // Mostra a aba selecionada e destaca o botão
             document.getElementById(idAba).classList.add('active');
             elementoClicado.classList.add('active');
         }
 
-        // LÓGICA DO CHAT
         function enviarChat(pessoa) {
             const input = document.getElementById('input-' + pessoa);
             const texto = input.value.trim();
@@ -404,7 +408,6 @@ codigo_html = """
             chatBox.appendChild(novaMsg);
             input.value = '';
             
-            // Desce o scroll automaticamente
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -412,7 +415,6 @@ codigo_html = """
             if (event.key === 'Enter') enviarChat(pessoa);
         }
 
-        // LÓGICA DO DICIONÁRIO
         function atualizarDicionario() {
             const texto = document.getElementById('input-dicionario').value;
             const resultado = document.getElementById('resultado-dicionario');
@@ -422,6 +424,9 @@ codigo_html = """
 </body>
 </html>
 """
+
+# Injeta a tag de imagem pronta no lugar do marcador dentro do HTML
+codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
 # Renderiza todo o aplicativo em altura total
 components.html(codigo_html, height=850, scrolling=False)
