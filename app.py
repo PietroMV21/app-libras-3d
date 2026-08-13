@@ -3,10 +3,10 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
-st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide")
+# 1. Configuração da página
+st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Função para converter a imagem em código para injetar no HTML
+# 2. Função para carregar a logo
 def carregar_logo(caminho_arquivo):
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
@@ -17,31 +17,38 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT (A mágica que trava a tela externa no celular)
+# INJEÇÃO CSS NO STREAMLIT (Trava a tela, tira padding e remove logomarca do Streamlit)
 st.markdown("""
     <style>
-        /* Oculta elementos do Streamlit */
-        header { visibility: hidden; }
-        footer { visibility: hidden; }
+        /* Oculta TODOS os elementos nativos e marcas d'água do Streamlit */
+        header { visibility: hidden !important; display: none !important; }
+        footer { visibility: hidden !important; display: none !important; }
+        #MainMenu { visibility: hidden !important; display: none !important; }
+        .viewerBadge_container__1QSob { display: none !important; } /* Esconde a logo do Streamlit */
         
-        /* Zera margens do container principal */
+        /* Zera as bordas e preenche a tela toda */
         .block-container { 
             padding: 0rem !important; 
             max-width: 100% !important; 
+            margin: 0 !important;
         }
         
-        /* TRAVA DE ROLAGEM EXTERNA: Impede o pull-to-refresh e a tela presa */
+        /* TRAVA DE ROLAGEM EXTERNA (Para o sistema não atualizar a página) */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             overscroll-behavior-y: none !important; 
             height: 100vh !important;
+            height: 100dvh !important; /* Suporte para telas modernas de celular */
             margin: 0 !important;
             padding: 0 !important;
+            position: fixed !important;
+            width: 100vw !important;
         }
 
-        /* Força o nosso app a preencher a tela perfeitamente */
+        /* O Iframe ocupa todo o espaço liberado */
         iframe {
             height: 100vh !important;
+            height: 100dvh !important;
             width: 100vw !important;
             border: none !important;
             display: block;
@@ -64,11 +71,26 @@ codigo_html = """
         body { 
             background-color: #f3f4f6; 
             color: #1f2937; 
-            height: 100vh; 
+            height: 100vh;
+            width: 100vw; 
             display: flex;
-            overflow: hidden; /* Trava a rolagem do corpo principal */
-            overscroll-behavior-y: none; /* Desativa o Pull-to-refresh no Android */
+            overflow: hidden; /* O CORPO NUNCA ROLA */
+            overscroll-behavior-y: none; 
             flex-direction: row; 
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* Ícones SVG Modernos */
+        .svg-icon {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
 
         /* BARRA LATERAL (MENU) - Desktop */
@@ -98,7 +120,7 @@ codigo_html = """
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #4b5563;
+            color: #6b7280;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -116,11 +138,10 @@ codigo_html = """
         .main-content {
             flex: 1;
             background-color: #f9fafb;
-            position: relative;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden; /* Mantém o conteúdo estritamente dentro da área */
+            overflow: hidden; 
         }
 
         .aba-conteudo {
@@ -128,7 +149,7 @@ codigo_html = """
             height: 100%;
             flex-direction: column;
             padding: 20px;
-            overflow-y: auto; /* Permite rolagem interna apenas nesta aba */
+            overflow-y: auto; /* Apenas o conteúdo rola */
         }
 
         .aba-conteudo.active { display: flex; }
@@ -150,7 +171,7 @@ codigo_html = """
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Muito importante para a barra de rolagem interna */
+            overflow: hidden; 
             border: 1px solid #e5e7eb;
             margin-bottom: 10px;
         }
@@ -158,12 +179,12 @@ codigo_html = """
         .chat-history {
             flex: 1;
             padding: 15px;
-            overflow-y: auto; /* Aqui nasce a barra de rolagem do chat! */
+            overflow-y: auto; /* ROLAGEM APENAS AQUI DENTRO */
             display: flex;
             flex-direction: column;
             gap: 15px;
             background-color: #f8fafc;
-            -webkit-overflow-scrolling: touch; /* Rolagem suave no celular */
+            -webkit-overflow-scrolling: touch; 
         }
 
         .mensagem {
@@ -199,7 +220,7 @@ codigo_html = """
             gap: 10px;
             border-top: 1px solid #e5e7eb;
             flex-direction: row; 
-            flex-shrink: 0; /* Impede que a caixa de texto seja esmagada */
+            flex-shrink: 0; 
         }
 
         .input-group {
@@ -271,6 +292,7 @@ codigo_html = """
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 10px;
+            padding-bottom: 20px;
         }
 
         .card-frase {
@@ -294,57 +316,55 @@ codigo_html = """
                 flex-direction: column; 
             }
 
-            /* Transforma o menu lateral em menu inferior flutuante */
+            /* O menu vira uma barra inferior moderna */
             .sidebar {
                 width: 100%;
-                height: 70px;
+                height: 75px; /* Um pouco mais alta para os toques */
                 flex-direction: row;
                 justify-content: space-around;
                 align-items: center;
-                padding: 0;
+                padding: 0 10px;
                 border-right: none;
                 border-top: 1px solid #e5e7eb;
                 position: fixed;
                 bottom: 0;
                 left: 0;
-                z-index: 1000;
+                z-index: 9999; /* Garante que fique acima de tudo */
+                background-color: #ffffff;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             }
 
             .main-content {
-                /* A altura é exatamente a tela toda MENOS a barra inferior de 70px */
-                height: calc(100vh - 70px); 
+                height: calc(100vh - 75px); 
                 position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
-                padding-bottom: 0;
             }
 
-            .logo-area {
-                display: none; 
-            }
+            .logo-area { display: none; }
 
             .menu-item {
                 flex: 1;
                 flex-direction: column; 
                 justify-content: center;
-                padding: 5px;
-                font-size: 12px;
-                gap: 4px;
+                padding: 8px 5px;
+                font-size: 11px; /* Fonte menor e moderna */
+                font-weight: 600;
+                gap: 6px;
                 border-left: none;
                 border-top: 3px solid transparent;
+                border-radius: 0;
             }
 
             .menu-item.active {
                 border-left: none;
                 border-top: 3px solid #10b981; 
                 background-color: transparent;
+                color: #10b981;
             }
 
-            .aba-conteudo {
-                padding: 10px; 
-            }
+            .aba-conteudo { padding: 15px 10px; }
 
             .chat-container {
                 margin-bottom: 0;
@@ -358,31 +378,36 @@ codigo_html = """
                 padding: 10px;
             }
             
-            .mensagem {
-                max-width: 90%;
-            }
+            .mensagem { max-width: 90%; }
         }
-
     </style>
 </head>
 <body>
 
-    <!-- BARRA LATERAL / INFERIOR (Depende do aparelho) -->
+    <!-- BARRA LATERAL / INFERIOR -->
     <div class="sidebar">
         <div class="logo-area">
             [[MARCADOR_LOGO]] LIBRAS Pro
         </div>
         
+        <!-- Ícones modernos em SVG em vez de Emojis -->
         <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
-            <span style="font-size: 20px;">💬</span>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
             <span>Conversa</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-dicionario', this)">
-            <span style="font-size: 20px;">📖</span>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
             <span>Dicionário</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-frases', this)">
-            <span style="font-size: 20px;">⚡</span>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
             <span>Rápido</span>
         </div>
     </div>
@@ -405,11 +430,16 @@ codigo_html = """
                 <div class="chat-inputs">
                     <div class="input-group">
                         <input type="text" id="input-p1" placeholder="Pessoa 1 digita..." onkeypress="teclaEnter(event, 'p1')">
-                        <button class="btn-enviar" onclick="enviarChat('p1')">➤</button>
+                        <button class="btn-enviar" onclick="enviarChat('p1')">
+                            <!-- Ícone de envio moderno -->
+                            <svg style="width:16px; height:16px; fill:white;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
                     </div>
                     <div class="input-group">
                         <input type="text" id="input-p2" placeholder="Pessoa 2 digita..." onkeypress="teclaEnter(event, 'p2')">
-                        <button class="btn-enviar" onclick="enviarChat('p2')" style="background-color: #374151;">➤</button>
+                        <button class="btn-enviar" onclick="enviarChat('p2')" style="background-color: #374151;">
+                            <svg style="width:16px; height:16px; fill:white;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -494,7 +524,6 @@ codigo_html = """
             chatBox.appendChild(novaMsg);
             input.value = '';
             
-            // Força a barra de rolagem interna do chat a descer ao máximo
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -512,8 +541,7 @@ codigo_html = """
 </html>
 """
 
-# Injeta a tag de imagem pronta no lugar do marcador dentro do HTML
 codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
-# Mantém um valor base para o Streamlit renderizar o iframe, mas o CSS dominará o tamanho final
-components.html(codigo_html, height=800, scrolling=False)
+# Utilizamos um valor alto que o CSS irá sobrepor para travar a tela
+components.html(codigo_html, height=1200, scrolling=False)
