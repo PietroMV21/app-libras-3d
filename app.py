@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide")
 
 # 2. Função para converter a imagem em código para injetar no HTML
@@ -17,11 +17,35 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# Removemos o padding padrão do Streamlit para ocupar a tela toda
+# INJEÇÃO CSS NO STREAMLIT (A mágica que trava a tela externa no celular)
 st.markdown("""
     <style>
-        .block-container { padding-top: 0rem; padding-bottom: 0rem; padding-left: 0rem; padding-right: 0rem; max-width: 100%; }
+        /* Oculta elementos do Streamlit */
         header { visibility: hidden; }
+        footer { visibility: hidden; }
+        
+        /* Zera margens do container principal */
+        .block-container { 
+            padding: 0rem !important; 
+            max-width: 100% !important; 
+        }
+        
+        /* TRAVA DE ROLAGEM EXTERNA: Impede o pull-to-refresh e a tela presa */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
+            overflow: hidden !important; 
+            overscroll-behavior-y: none !important; 
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Força o nosso app a preencher a tela perfeitamente */
+        iframe {
+            height: 100vh !important;
+            width: 100vw !important;
+            border: none !important;
+            display: block;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -42,8 +66,9 @@ codigo_html = """
             color: #1f2937; 
             height: 100vh; 
             display: flex;
-            overflow: hidden;
-            flex-direction: row; /* Padrão para Desktop */
+            overflow: hidden; /* Trava a rolagem do corpo principal */
+            overscroll-behavior-y: none; /* Desativa o Pull-to-refresh no Android */
+            flex-direction: row; 
         }
 
         /* BARRA LATERAL (MENU) - Desktop */
@@ -55,7 +80,7 @@ codigo_html = """
             flex-direction: column;
             padding: 20px 0;
             box-shadow: 2px 0 5px rgba(0,0,0,0.02);
-            z-index: 10;
+            z-index: 100;
         }
 
         .logo-area {
@@ -95,6 +120,7 @@ codigo_html = """
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden; /* Mantém o conteúdo estritamente dentro da área */
         }
 
         .aba-conteudo {
@@ -102,6 +128,7 @@ codigo_html = """
             height: 100%;
             flex-direction: column;
             padding: 20px;
+            overflow-y: auto; /* Permite rolagem interna apenas nesta aba */
         }
 
         .aba-conteudo.active { display: flex; }
@@ -110,6 +137,7 @@ codigo_html = """
             padding-bottom: 15px;
             border-bottom: 1px solid #e5e7eb;
             margin-bottom: 15px;
+            flex-shrink: 0;
         }
         .header-aba h2 { color: #111827; font-size: 20px;}
         .header-aba p { color: #6b7280; font-size: 14px; margin-top: 5px; }
@@ -122,7 +150,7 @@ codigo_html = """
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* Muito importante para a barra de rolagem interna */
             border: 1px solid #e5e7eb;
             margin-bottom: 10px;
         }
@@ -130,11 +158,12 @@ codigo_html = """
         .chat-history {
             flex: 1;
             padding: 15px;
-            overflow-y: auto;
+            overflow-y: auto; /* Aqui nasce a barra de rolagem do chat! */
             display: flex;
             flex-direction: column;
             gap: 15px;
             background-color: #f8fafc;
+            -webkit-overflow-scrolling: touch; /* Rolagem suave no celular */
         }
 
         .mensagem {
@@ -169,7 +198,8 @@ codigo_html = """
             padding: 12px;
             gap: 10px;
             border-top: 1px solid #e5e7eb;
-            flex-direction: row; /* Desktop lado a lado */
+            flex-direction: row; 
+            flex-shrink: 0; /* Impede que a caixa de texto seja esmagada */
         }
 
         .input-group {
@@ -261,18 +291,13 @@ codigo_html = """
         /* ========================================================= */
         @media (max-width: 768px) {
             body {
-                flex-direction: column; /* Muda a direção para coluna em telas pequenas */
-            }
-
-            .main-content {
-                height: calc(100vh - 65px); /* Dá espaço para o menu inferior */
-                padding-bottom: 0;
+                flex-direction: column; 
             }
 
             /* Transforma o menu lateral em menu inferior flutuante */
             .sidebar {
                 width: 100%;
-                height: 65px;
+                height: 70px;
                 flex-direction: row;
                 justify-content: space-around;
                 align-items: center;
@@ -282,17 +307,27 @@ codigo_html = """
                 position: fixed;
                 bottom: 0;
                 left: 0;
-                z-index: 100;
+                z-index: 1000;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             }
 
+            .main-content {
+                /* A altura é exatamente a tela toda MENOS a barra inferior de 70px */
+                height: calc(100vh - 70px); 
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding-bottom: 0;
+            }
+
             .logo-area {
-                display: none; /* Esconde a logo para liberar espaço na barra inferior */
+                display: none; 
             }
 
             .menu-item {
                 flex: 1;
-                flex-direction: column; /* Ícone em cima, texto embaixo */
+                flex-direction: column; 
                 justify-content: center;
                 padding: 5px;
                 font-size: 12px;
@@ -303,17 +338,24 @@ codigo_html = """
 
             .menu-item.active {
                 border-left: none;
-                border-top: 3px solid #10b981; /* O destaque ativo passa para cima */
+                border-top: 3px solid #10b981; 
                 background-color: transparent;
             }
 
             .aba-conteudo {
-                padding: 10px; /* Reduz margens na tela pequena */
+                padding: 10px; 
             }
 
-            /* Empilha as caixas de digitação para não ficarem espremidas */
+            .chat-container {
+                margin-bottom: 0;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
             .chat-inputs {
                 flex-direction: column; 
+                padding: 10px;
             }
             
             .mensagem {
@@ -452,6 +494,7 @@ codigo_html = """
             chatBox.appendChild(novaMsg);
             input.value = '';
             
+            // Força a barra de rolagem interna do chat a descer ao máximo
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -472,5 +515,5 @@ codigo_html = """
 # Injeta a tag de imagem pronta no lugar do marcador dentro do HTML
 codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
-# Renderiza com uma altura alta para preencher tudo na tela de celulares
-components.html(codigo_html, height=1000, scrolling=False)
+# Mantém um valor base para o Streamlit renderizar o iframe, mas o CSS dominará o tamanho final
+components.html(codigo_html, height=800, scrolling=False)
