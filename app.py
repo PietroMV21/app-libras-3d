@@ -197,7 +197,7 @@ codigo_html = """
         .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
         .btn-modal-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;}
         
-        /* O BOTÃO SECUNDÁRIO AGORA É UM BOTÃO REAL, NÃO UM LINK (a) */
+        /* O LINK SECUNDÁRIO RETORNA E GANHA ESTILO DE BOTÃO */
         .btn-modal-secondary { 
             background: transparent; 
             color: #6b7280; 
@@ -207,7 +207,8 @@ codigo_html = """
             font-weight: bold; 
             cursor: pointer; 
             text-align: center;
-            width: 100%;
+            text-decoration: none; /* Tira o sublinhado do link */
+            display: block; /* Comporta-se como um bloco/botão */
         }
         .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
@@ -274,8 +275,8 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <!-- O LINK AGORA É UM BOTÃO QUE EXECUTA UMA FUNÇÃO JS -->
-                <button class="btn-modal-secondary" onclick="abrirLinkOficial()">Ler mais sobre o VLibras</button>
+                <!-- CORREÇÃO DE SEGURANÇA PARA ABERTURA DE LINKS EM WEBVIEW E IFRAME -->
+                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_blank" rel="noopener noreferrer" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
             </div>
         </div>
     </div>
@@ -386,14 +387,8 @@ codigo_html = """
     <script>
         new window.VLibras.Widget('https://vlibras.gov.br/app');
 
-        // FUNÇÕES DO MODAL E DO LINK (Forçando abertura global)
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
-        
-        function abrirLinkOficial() {
-            // Este comando diz ao navegador/aplicativo para abrir o link na janela principal, furando iframes
-            window.open('https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras', '_top');
-        }
 
         function mudarAba(idAba, elementoClicado) {
             document.querySelectorAll('.aba-conteudo').forEach(aba => { aba.classList.remove('active'); });
