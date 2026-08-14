@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
 # 2. Função para converter a logo
@@ -17,14 +17,16 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT
+# INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
 st.markdown("""
     <style>
+        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
         .viewerBadge_container__1QSob { display: none !important; }
         
+        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             height: 100vh !important;
@@ -32,6 +34,7 @@ st.markdown("""
             padding: 0 !important;
         }
 
+        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
             position: fixed !important;
             top: 0 !important;
@@ -95,37 +98,32 @@ codigo_html = """
             padding: 0 20px 30px 20px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between;
             color: #10b981;
             font-size: 20px;
             font-weight: 700;
-            gap: 12px;
         }
         
-        /* Contêiner para empurrar o botão de info para o final da sidebar no PC */
-        .menu-items-container {
-            flex: 1;
+        .logo-container {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* BOTÃO DE INFORMAÇÃO - PC (No canto inferior esquerdo) */
-        .btn-info-desktop {
+        /* BOTÃO DE INFORMAÇÃO */
+        .btn-info {
             background: none;
             border: none;
             color: #9ca3af;
             cursor: pointer;
-            padding: 15px 25px;
+            padding: 5px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-            font-weight: 500;
+            justify-content: center;
+            border-radius: 50%;
             transition: all 0.2s;
-            margin-top: auto; /* Empurra para o fundo */
-            border-top: 1px solid #f3f4f6;
         }
-        .btn-info-desktop:hover { color: #10b981; background: #f0fdf4; }
+        .btn-info:hover { color: #10b981; background: #f3f4f6; }
 
         .menu-item {
             padding: 15px 25px;
@@ -211,7 +209,8 @@ codigo_html = """
             font-weight: bold; 
             cursor: pointer; 
             text-align: center;
-            width: 100%;
+            text-decoration: none; 
+            display: block; 
         }
         .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
@@ -227,10 +226,9 @@ codigo_html = """
 
             .main-content { position: absolute; top: 0; bottom: 75px; left: 0; right: 0; height: auto; }
             .logo-area { display: none; }
-            .btn-info-desktop { display: none; } /* Esconde o botão inferior no celular */
+            .btn-info-desktop { display: none; } 
             .menu-items-container { flex-direction: row; flex: 1; }
 
-            /* Ícone de Info no Celular - Fica flutuando no topo direito */
             .btn-info-mobile {
                 display: flex !important;
                 position: absolute;
@@ -255,7 +253,6 @@ codigo_html = """
             .mensagem { max-width: 90%; }
         }
 
-        /* Oculta botão mobile no Desktop por padrão */
         .btn-info-mobile { display: none; }
 
     </style>
@@ -284,7 +281,6 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <!-- O LINK AGORA USA UMA FUNÇÃO JS AGRESSIVA PARA ABRIR O NAVEGADOR -->
                 <button class="btn-modal-secondary" onclick="forcarLinkExterno()">Ler mais sobre o VLibras</button>
             </div>
         </div>
@@ -401,23 +397,23 @@ codigo_html = """
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
 
-        // A MÁGICA PARA FORÇAR A SAÍDA DO WEBVIEW E DO IFRAME
+        // MÁGICA ATUALIZADA: Usando Intent nativa para forçar a abertura no navegador do celular (Chrome, etc)
         function forcarLinkExterno() {
             var url = 'https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras';
+            var isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
             
-            // Tenta criar um link invisível com a flag de sistema do WebView do Android
-            var a = document.createElement('a');
-            a.href = url;
-            a.target = '_system'; 
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            // Fallback: se o clique manual falhar, usa o redirecionamento pai
-            setTimeout(function() {
-                window.parent.location.href = url;
-            }, 100);
+            try {
+                if (isAndroid) {
+                    // Estrutura de "Intent" do Android que obriga o SO a abrir no navegador externo (fura o WebView)
+                    var intentUrl = 'intent://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras#Intent;scheme=https;action=android.intent.action.VIEW;end;';
+                    window.location.href = intentUrl;
+                } else {
+                    // Para PC e iPhone
+                    window.open(url, '_blank');
+                }
+            } catch(e) {
+                console.error("Erro ao abrir link: ", e);
+            }
         }
 
         function mudarAba(idAba, elementoClicado) {
