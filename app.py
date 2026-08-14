@@ -17,7 +17,7 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
+# INJEÇÃO CSS NO STREAMLIT
 st.markdown("""
     <style>
         header { visibility: hidden !important; display: none !important; }
@@ -95,32 +95,37 @@ codigo_html = """
             padding: 0 20px 30px 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             color: #10b981;
             font-size: 20px;
             font-weight: 700;
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
             gap: 12px;
         }
+        
+        /* Contêiner para empurrar o botão de info para o final da sidebar no PC */
+        .menu-items-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* BOTÃO DE INFORMAÇÃO */
-        .btn-info {
+        /* BOTÃO DE INFORMAÇÃO - PC (No canto inferior esquerdo) */
+        .btn-info-desktop {
             background: none;
             border: none;
             color: #9ca3af;
             cursor: pointer;
-            padding: 5px;
+            padding: 15px 25px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 50%;
+            justify-content: flex-start;
+            gap: 12px;
+            font-weight: 500;
             transition: all 0.2s;
+            margin-top: auto; /* Empurra para o fundo */
+            border-top: 1px solid #f3f4f6;
         }
-        .btn-info:hover { color: #10b981; background: #f3f4f6; }
+        .btn-info-desktop:hover { color: #10b981; background: #f0fdf4; }
 
         .menu-item {
             padding: 15px 25px;
@@ -197,7 +202,6 @@ codigo_html = """
         .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
         .btn-modal-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;}
         
-        /* O LINK SECUNDÁRIO RETORNA E GANHA ESTILO DE BOTÃO */
         .btn-modal-secondary { 
             background: transparent; 
             color: #6b7280; 
@@ -207,8 +211,7 @@ codigo_html = """
             font-weight: bold; 
             cursor: pointer; 
             text-align: center;
-            text-decoration: none; /* Tira o sublinhado do link */
-            display: block; /* Comporta-se como um bloco/botão */
+            width: 100%;
         }
         .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
@@ -223,9 +226,11 @@ codigo_html = """
             }
 
             .main-content { position: absolute; top: 0; bottom: 75px; left: 0; right: 0; height: auto; }
-
             .logo-area { display: none; }
+            .btn-info-desktop { display: none; } /* Esconde o botão inferior no celular */
+            .menu-items-container { flex-direction: row; flex: 1; }
 
+            /* Ícone de Info no Celular - Fica flutuando no topo direito */
             .btn-info-mobile {
                 display: flex !important;
                 position: absolute;
@@ -235,6 +240,9 @@ codigo_html = """
                 box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                 z-index: 999;
                 border: 1px solid #e5e7eb;
+                padding: 5px;
+                border-radius: 50%;
+                cursor: pointer;
             }
 
             .menu-item { flex: 1; flex-direction: column; justify-content: center; padding: 8px 5px; font-size: 11px; font-weight: 600; gap: 6px; border-left: none; border-top: 3px solid transparent; border-radius: 0; }
@@ -247,6 +255,7 @@ codigo_html = """
             .mensagem { max-width: 90%; }
         }
 
+        /* Oculta botão mobile no Desktop por padrão */
         .btn-info-mobile { display: none; }
 
     </style>
@@ -254,7 +263,7 @@ codigo_html = """
 <body>
 
     <!-- BOTÃO INFO (VISÍVEL SÓ NO CELULAR) -->
-    <button class="btn-info btn-info-mobile" onclick="abrirModal()" title="Sobre o Projeto">
+    <button class="btn-info-mobile" onclick="abrirModal()" title="Sobre o Projeto">
         <svg class="svg-icon" viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: #10b981;">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -275,8 +284,8 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <!-- CORREÇÃO DE SEGURANÇA PARA ABERTURA DE LINKS EM WEBVIEW E IFRAME -->
-                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_blank" rel="noopener noreferrer" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
+                <!-- O LINK AGORA USA UMA FUNÇÃO JS AGRESSIVA PARA ABRIR O NAVEGADOR -->
+                <button class="btn-modal-secondary" onclick="forcarLinkExterno()">Ler mais sobre o VLibras</button>
             </div>
         </div>
     </div>
@@ -284,27 +293,29 @@ codigo_html = """
     <!-- BARRA LATERAL / INFERIOR -->
     <div class="sidebar">
         <div class="logo-area">
-            <div class="logo-container">
-                [[MARCADOR_LOGO]] LIBRAS Pro
-            </div>
-            <!-- BOTÃO INFO (VISÍVEL SÓ NO DESKTOP) -->
-            <button class="btn-info" onclick="abrirModal()" title="Sobre o Projeto">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            </button>
+            [[MARCADOR_LOGO]] LIBRAS Pro
         </div>
         
-        <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span>Conversa</span>
+        <div class="menu-items-container">
+            <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span>Conversa</span>
+            </div>
+            <div class="menu-item" onclick="mudarAba('aba-dicionario', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <span>Dicionário</span>
+            </div>
+            <div class="menu-item" onclick="mudarAba('aba-frases', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span>Rápido</span>
+            </div>
         </div>
-        <div class="menu-item" onclick="mudarAba('aba-dicionario', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            <span>Dicionário</span>
-        </div>
-        <div class="menu-item" onclick="mudarAba('aba-frases', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span>Rápido</span>
-        </div>
+
+        <!-- BOTÃO INFO (VISÍVEL SÓ NO DESKTOP - Canto inferior esquerdo) -->
+        <button class="btn-info-desktop" onclick="abrirModal()" title="Sobre o Projeto">
+            <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Sobre o Projeto</span>
+        </button>
     </div>
 
     <!-- ÁREA PRINCIPAL -->
@@ -389,6 +400,25 @@ codigo_html = """
 
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
+
+        // A MÁGICA PARA FORÇAR A SAÍDA DO WEBVIEW E DO IFRAME
+        function forcarLinkExterno() {
+            var url = 'https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras';
+            
+            // Tenta criar um link invisível com a flag de sistema do WebView do Android
+            var a = document.createElement('a');
+            a.href = url;
+            a.target = '_system'; 
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // Fallback: se o clique manual falhar, usa o redirecionamento pai
+            setTimeout(function() {
+                window.parent.location.href = url;
+            }, 100);
+        }
 
         function mudarAba(idAba, elementoClicado) {
             document.querySelectorAll('.aba-conteudo').forEach(aba => { aba.classList.remove('active'); });
