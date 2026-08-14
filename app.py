@@ -3,10 +3,10 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Função para carregar a logo
+# 2. Função para converter a imagem em código para injetar no HTML
 def carregar_logo(caminho_arquivo):
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
@@ -17,41 +17,33 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT (Trava a tela, tira padding e remove logomarca do Streamlit)
+# INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
 st.markdown("""
     <style>
-        /* Oculta TODOS os elementos nativos e marcas d'água do Streamlit */
+        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
-        .viewerBadge_container__1QSob { display: none !important; } /* Esconde a logo do Streamlit */
+        .viewerBadge_container__1QSob { display: none !important; }
         
-        /* Zera as bordas e preenche a tela toda */
-        .block-container { 
-            padding: 0rem !important; 
-            max-width: 100% !important; 
-            margin: 0 !important;
-        }
-        
-        /* TRAVA DE ROLAGEM EXTERNA (Para o sistema não atualizar a página) */
+        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
-            overscroll-behavior-y: none !important; 
             height: 100vh !important;
-            height: 100dvh !important; /* Suporte para telas modernas de celular */
             margin: 0 !important;
             padding: 0 !important;
-            position: fixed !important;
-            width: 100vw !important;
         }
 
-        /* O Iframe ocupa todo o espaço liberado */
+        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
-            height: 100vh !important;
-            height: 100dvh !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important; /* dVH = altura exata em celulares modernos */
+            z-index: 999999 !important;
             border: none !important;
-            display: block;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -68,18 +60,16 @@ codigo_html = """
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
+        /* O body interno também é travado */
         body { 
             background-color: #f3f4f6; 
             color: #1f2937; 
-            height: 100vh;
-            width: 100vw; 
+            position: fixed; /* Trava na tela */
+            top: 0; bottom: 0; left: 0; right: 0;
             display: flex;
-            overflow: hidden; /* O CORPO NUNCA ROLA */
+            overflow: hidden; 
             overscroll-behavior-y: none; 
             flex-direction: row; 
-            position: fixed;
-            top: 0;
-            left: 0;
         }
 
         /* Ícones SVG Modernos */
@@ -140,7 +130,7 @@ codigo_html = """
             background-color: #f9fafb;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
             overflow: hidden; 
         }
 
@@ -149,7 +139,7 @@ codigo_html = """
             height: 100%;
             flex-direction: column;
             padding: 20px;
-            overflow-y: auto; /* Apenas o conteúdo rola */
+            overflow-y: auto; 
         }
 
         .aba-conteudo.active { display: flex; }
@@ -179,7 +169,7 @@ codigo_html = """
         .chat-history {
             flex: 1;
             padding: 15px;
-            overflow-y: auto; /* ROLAGEM APENAS AQUI DENTRO */
+            overflow-y: auto; 
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -319,27 +309,28 @@ codigo_html = """
             /* O menu vira uma barra inferior moderna */
             .sidebar {
                 width: 100%;
-                height: 75px; /* Um pouco mais alta para os toques */
+                height: 75px; 
                 flex-direction: row;
                 justify-content: space-around;
                 align-items: center;
                 padding: 0 10px;
                 border-right: none;
                 border-top: 1px solid #e5e7eb;
-                position: fixed;
+                position: absolute; /* Congela na base da tela */
                 bottom: 0;
                 left: 0;
-                z-index: 9999; /* Garante que fique acima de tudo */
+                z-index: 9999; 
                 background-color: #ffffff;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             }
 
             .main-content {
-                height: calc(100vh - 75px); 
-                position: absolute;
+                position: absolute; /* Congela do topo até o menu */
                 top: 0;
+                bottom: 75px; 
                 left: 0;
-                width: 100%;
+                right: 0;
+                height: auto;
             }
 
             .logo-area { display: none; }
@@ -349,7 +340,7 @@ codigo_html = """
                 flex-direction: column; 
                 justify-content: center;
                 padding: 8px 5px;
-                font-size: 11px; /* Fonte menor e moderna */
+                font-size: 11px; 
                 font-weight: 600;
                 gap: 6px;
                 border-left: none;
@@ -390,7 +381,6 @@ codigo_html = """
             [[MARCADOR_LOGO]] LIBRAS Pro
         </div>
         
-        <!-- Ícones modernos em SVG em vez de Emojis -->
         <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
             <svg class="svg-icon" viewBox="0 0 24 24">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -431,7 +421,6 @@ codigo_html = """
                     <div class="input-group">
                         <input type="text" id="input-p1" placeholder="Pessoa 1 digita..." onkeypress="teclaEnter(event, 'p1')">
                         <button class="btn-enviar" onclick="enviarChat('p1')">
-                            <!-- Ícone de envio moderno -->
                             <svg style="width:16px; height:16px; fill:white;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                         </button>
                     </div>
@@ -543,5 +532,5 @@ codigo_html = """
 
 codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
-# Utilizamos um valor alto que o CSS irá sobrepor para travar a tela
-components.html(codigo_html, height=1200, scrolling=False)
+# A altura no components.html não importa mais, o CSS força ele a ocupar a tela do celular
+components.html(codigo_html, height=800, scrolling=False)
