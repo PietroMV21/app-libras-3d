@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
 # 2. Função para converter a logo
@@ -17,14 +17,16 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT (Trava Absoluta)
+# INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
 st.markdown("""
     <style>
+        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
         .viewerBadge_container__1QSob { display: none !important; }
         
+        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             height: 100vh !important;
@@ -32,6 +34,7 @@ st.markdown("""
             padding: 0 !important;
         }
 
+        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
             position: fixed !important;
             top: 0 !important;
@@ -264,7 +267,8 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_blank" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
+                <!-- AQUI ESTÁ A CORREÇÃO: target="_top" em vez de _blank -->
+                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_top" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
             </div>
         </div>
     </div>
