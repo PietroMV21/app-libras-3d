@@ -3,10 +3,10 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
+# 1. Configuração da página
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Função para converter a imagem em código para injetar no HTML
+# 2. Função para converter a logo
 def carregar_logo(caminho_arquivo):
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
@@ -17,16 +17,14 @@ def carregar_logo(caminho_arquivo):
 
 logo_html = carregar_logo("Logo_Libras.png")
 
-# INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
+# INJEÇÃO CSS NO STREAMLIT (Trava Absoluta)
 st.markdown("""
     <style>
-        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
         .viewerBadge_container__1QSob { display: none !important; }
         
-        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             height: 100vh !important;
@@ -34,21 +32,20 @@ st.markdown("""
             padding: 0 !important;
         }
 
-        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            height: 100dvh !important; /* dVH = altura exata em celulares modernos */
+            height: 100dvh !important; 
             z-index: 999999 !important;
             border: none !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# CÓDIGO DO APLICATIVO WEB (HTML + CSS Responsivo + JS)
+# CÓDIGO DO APLICATIVO WEB
 codigo_html = """
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -60,11 +57,10 @@ codigo_html = """
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        /* O body interno também é travado */
         body { 
             background-color: #f3f4f6; 
             color: #1f2937; 
-            position: fixed; /* Trava na tela */
+            position: fixed; 
             top: 0; bottom: 0; left: 0; right: 0;
             display: flex;
             overflow: hidden; 
@@ -72,7 +68,6 @@ codigo_html = """
             flex-direction: row; 
         }
 
-        /* Ícones SVG Modernos */
         .svg-icon {
             width: 24px;
             height: 24px;
@@ -93,17 +88,39 @@ codigo_html = """
             padding: 20px 0;
             box-shadow: 2px 0 5px rgba(0,0,0,0.02);
             z-index: 100;
+            position: relative;
         }
 
         .logo-area {
             padding: 0 20px 30px 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
             color: #10b981;
             font-size: 20px;
             font-weight: 700;
         }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* BOTÃO DE INFORMAÇÃO */
+        .btn-info {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .btn-info:hover { color: #10b981; background: #f3f4f6; }
 
         .menu-item {
             padding: 15px 25px;
@@ -116,13 +133,8 @@ codigo_html = """
             transition: all 0.2s;
             border-left: 4px solid transparent;
         }
-
         .menu-item:hover { background-color: #f0fdf4; color: #10b981; }
-        .menu-item.active { 
-            background-color: #ecfdf5; 
-            color: #10b981; 
-            border-left: 4px solid #10b981; 
-        }
+        .menu-item.active { background-color: #ecfdf5; color: #10b981; border-left: 4px solid #10b981; }
 
         /* ÁREA PRINCIPAL */
         .main-content {
@@ -134,270 +146,151 @@ codigo_html = """
             overflow: hidden; 
         }
 
-        .aba-conteudo {
-            display: none;
-            height: 100%;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto; 
-        }
-
+        .aba-conteudo { display: none; height: 100%; flex-direction: column; padding: 20px; overflow-y: auto; }
         .aba-conteudo.active { display: flex; }
 
-        .header-aba {
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 15px;
-            flex-shrink: 0;
-        }
+        .header-aba { padding-bottom: 15px; border-bottom: 1px solid #e5e7eb; margin-bottom: 15px; flex-shrink: 0; }
         .header-aba h2 { color: #111827; font-size: 20px;}
         .header-aba p { color: #6b7280; font-size: 14px; margin-top: 5px; }
 
-        /* MÓDULO 1: CHAT UNIFICADO */
-        .chat-container {
-            flex: 1;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; 
-            border: 1px solid #e5e7eb;
-            margin-bottom: 10px;
-        }
-
-        .chat-history {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto; 
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background-color: #f8fafc;
-            -webkit-overflow-scrolling: touch; 
-        }
-
-        .mensagem {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 15px;
-            line-height: 1.4;
-            cursor: pointer;
-            position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .msg-p1 {
-            background-color: #d1fae5;
-            color: #065f46;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .msg-p2 {
-            background-color: #ffffff;
-            color: #1f2937;
-            align-self: flex-end;
-            border: 1px solid #e5e7eb;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-inputs {
-            display: flex;
-            background: #ffffff;
-            padding: 12px;
-            gap: 10px;
-            border-top: 1px solid #e5e7eb;
-            flex-direction: row; 
-            flex-shrink: 0; 
-        }
-
-        .input-group {
-            flex: 1;
-            display: flex;
-            background: #f3f4f6;
-            border-radius: 25px;
-            padding: 4px 4px 4px 15px;
-            border: 1px solid transparent;
-        }
-        
+        /* MÓDULOS (Chat, Dicionário, Frases) */
+        .chat-container { flex: 1; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 10px; }
+        .chat-history { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-color: #f8fafc; -webkit-overflow-scrolling: touch; }
+        .mensagem { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.4; cursor: pointer; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-p1 { background-color: #d1fae5; color: #065f46; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-p2 { background-color: #ffffff; color: #1f2937; align-self: flex-end; border: 1px solid #e5e7eb; border-bottom-right-radius: 4px; }
+        .chat-inputs { display: flex; background: #ffffff; padding: 12px; gap: 10px; border-top: 1px solid #e5e7eb; flex-direction: row; flex-shrink: 0; }
+        .input-group { flex: 1; display: flex; background: #f3f4f6; border-radius: 25px; padding: 4px 4px 4px 15px; border: 1px solid transparent; }
         .input-group:focus-within { border-color: #10b981; background: #ffffff; }
+        .input-group input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; }
+        .btn-enviar { background: #10b981; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .painel-centralizado { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; text-align: center; }
+        .input-grande { width: 100%; max-width: 500px; padding: 12px 15px; font-size: 16px; border: 2px solid #d1fae5; border-radius: 30px; outline: none; margin-bottom: 15px; }
+        .texto-traducao { font-size: 20px; font-weight: 600; color: #065f46; padding: 15px; background: #ecfdf5; border-radius: 12px; display: inline-block; cursor: pointer; border: 1px dashed #10b981; }
+        .grid-frases { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding-bottom: 20px; }
+        .card-frase { background: #ffffff; border: 1px solid #e5e7eb; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 500; color: #374151; font-size: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
-        .input-group input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .btn-enviar {
-            background: #10b981;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
+        /* MODAL DE INFORMAÇÕES (O Pop-up) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999999;
             align-items: center;
             justify-content: center;
-        }
-
-        /* MÓDULO 2 & 3: DICIONÁRIO E FRASES RÁPIDAS */
-        .painel-centralizado {
-            background: #ffffff;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-            text-align: center;
+            backdrop-filter: blur(3px);
         }
-
-        .input-grande {
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 450px;
             width: 100%;
-            max-width: 500px;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 2px solid #d1fae5;
-            border-radius: 30px;
-            outline: none;
-            margin-bottom: 15px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            border-top: 5px solid #10b981;
         }
+        .modal-title { font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+        .modal-text { font-size: 14px; color: #4b5563; line-height: 1.5; margin-bottom: 20px; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .btn-modal-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;}
+        .btn-modal-secondary { background: transparent; color: #6b7280; border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center;}
+        .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
-        .texto-traducao {
-            font-size: 20px;
-            font-weight: 600;
-            color: #065f46;
-            padding: 15px;
-            background: #ecfdf5;
-            border-radius: 12px;
-            display: inline-block;
-            cursor: pointer;
-            border: 1px dashed #10b981;
-        }
-
-        .grid-frases {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            padding-bottom: 20px;
-        }
-
-        .card-frase {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        /* ========================================================= */
-        /* MEDIA QUERIES (A MÁGICA PARA O CELULAR)                   */
-        /* ========================================================= */
+        /* MODO CELULAR MÁGICO */
         @media (max-width: 768px) {
-            body {
-                flex-direction: column; 
-            }
+            body { flex-direction: column; }
 
-            /* O menu vira uma barra inferior moderna */
             .sidebar {
-                width: 100%;
-                height: 75px; 
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
-                padding: 0 10px;
-                border-right: none;
-                border-top: 1px solid #e5e7eb;
-                position: absolute; /* Congela na base da tela */
-                bottom: 0;
-                left: 0;
-                z-index: 9999; 
-                background-color: #ffffff;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+                width: 100%; height: 75px; flex-direction: row; justify-content: space-around; align-items: center;
+                padding: 0 10px; border-right: none; border-top: 1px solid #e5e7eb; position: absolute; bottom: 0; left: 0;
+                z-index: 9999; background-color: #ffffff; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             }
 
-            .main-content {
-                position: absolute; /* Congela do topo até o menu */
-                top: 0;
-                bottom: 75px; 
-                left: 0;
-                right: 0;
-                height: auto;
-            }
+            .main-content { position: absolute; top: 0; bottom: 75px; left: 0; right: 0; height: auto; }
 
             .logo-area { display: none; }
 
-            .menu-item {
-                flex: 1;
-                flex-direction: column; 
-                justify-content: center;
-                padding: 8px 5px;
-                font-size: 11px; 
-                font-weight: 600;
-                gap: 6px;
-                border-left: none;
-                border-top: 3px solid transparent;
-                border-radius: 0;
+            /* Ícone de Info no Celular - Fica flutuando no topo direito */
+            .btn-info-mobile {
+                display: flex !important;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: white;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                z-index: 999;
+                border: 1px solid #e5e7eb;
             }
 
-            .menu-item.active {
-                border-left: none;
-                border-top: 3px solid #10b981; 
-                background-color: transparent;
-                color: #10b981;
-            }
+            .menu-item { flex: 1; flex-direction: column; justify-content: center; padding: 8px 5px; font-size: 11px; font-weight: 600; gap: 6px; border-left: none; border-top: 3px solid transparent; border-radius: 0; }
+            .menu-item.active { border-left: none; border-top: 3px solid #10b981; background-color: transparent; color: #10b981; }
 
             .aba-conteudo { padding: 15px 10px; }
-
-            .chat-container {
-                margin-bottom: 0;
-                border-radius: 0;
-                border-left: none;
-                border-right: none;
-            }
-
-            .chat-inputs {
-                flex-direction: column; 
-                padding: 10px;
-            }
-            
+            .header-aba { padding-right: 40px; /* Evita que o título bata no botão info novo */ }
+            .chat-container { margin-bottom: 0; border-radius: 0; border-left: none; border-right: none; }
+            .chat-inputs { flex-direction: column; padding: 10px; }
             .mensagem { max-width: 90%; }
         }
+
+        /* Oculta botão mobile no Desktop */
+        .btn-info-mobile { display: none; }
+
     </style>
 </head>
 <body>
 
+    <!-- BOTÃO INFO (VISÍVEL SÓ NO CELULAR) -->
+    <button class="btn-info btn-info-mobile" onclick="abrirModal()" title="Sobre o Projeto">
+        <svg class="svg-icon" viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: #10b981;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+    </button>
+
+    <!-- JANELA MODAL (POP-UP) -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #10b981; width: 22px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Sobre o LIBRAS Pro
+            </div>
+            <div class="modal-text">
+                Este aplicativo utiliza a tecnologia <strong>VLibras</strong> (desenvolvida pelo Governo Federal) para traduzir textos para a Língua Brasileira de Sinais através de um Avatar 3D.<br><br>
+                <strong>⚠️ Atenção:</strong> O modelo do VLibras ainda está em constante treinamento. Ele pode cometer erros de interpretação gramatical ou soletrar (datilologia) palavras que já possuem sinais estabelecidos.
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
+                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_blank" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
+            </div>
+        </div>
+    </div>
+
     <!-- BARRA LATERAL / INFERIOR -->
     <div class="sidebar">
         <div class="logo-area">
-            [[MARCADOR_LOGO]] LIBRAS Pro
+            <div class="logo-container">
+                [[MARCADOR_LOGO]] LIBRAS Pro
+            </div>
+            <!-- BOTÃO INFO (VISÍVEL SÓ NO DESKTOP) -->
+            <button class="btn-info" onclick="abrirModal()" title="Sobre o Projeto">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </button>
         </div>
         
         <div class="menu-item active" onclick="mudarAba('aba-chat', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             <span>Conversa</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-dicionario', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             <span>Dicionário</span>
         </div>
         <div class="menu-item" onclick="mudarAba('aba-frases', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
+            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             <span>Rápido</span>
         </div>
     </div>
@@ -482,44 +375,33 @@ codigo_html = """
     <script>
         new window.VLibras.Widget('https://vlibras.gov.br/app');
 
+        // FUNÇÕES DO MODAL (INFO)
+        function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
+
         function mudarAba(idAba, elementoClicado) {
-            document.querySelectorAll('.aba-conteudo').forEach(aba => {
-                aba.classList.remove('active');
-            });
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
+            document.querySelectorAll('.aba-conteudo').forEach(aba => { aba.classList.remove('active'); });
+            document.querySelectorAll('.menu-item').forEach(item => { item.classList.remove('active'); });
             document.getElementById(idAba).classList.add('active');
             elementoClicado.classList.add('active');
         }
 
-        function limparTexto(texto) {
-            return texto.replace(/[.,!?]/g, '').trim();
-        }
+        function limparTexto(texto) { return texto.replace(/[.,!?]/g, '').trim(); }
 
         function enviarChat(pessoa) {
             const input = document.getElementById('input-' + pessoa);
             const texto = input.value;
-            
             if(texto.trim() === '') return;
-
             const chatBox = document.getElementById('chat-box');
             const novaMsg = document.createElement('div');
-            
             novaMsg.className = 'mensagem ' + (pessoa === 'p1' ? 'msg-p1' : 'msg-p2');
             novaMsg.textContent = limparTexto(texto);
-
             chatBox.appendChild(novaMsg);
             input.value = '';
-            
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function teclaEnter(event, pessoa) {
-            if (event.key === 'Enter') enviarChat(pessoa);
-        }
-
+        function teclaEnter(event, pessoa) { if (event.key === 'Enter') enviarChat(pessoa); }
         function atualizarDicionario() {
             const texto = document.getElementById('input-dicionario').value;
             const resultado = document.getElementById('resultado-dicionario');
@@ -532,5 +414,4 @@ codigo_html = """
 
 codigo_html = codigo_html.replace('[[MARCADOR_LOGO]]', logo_html)
 
-# A altura no components.html não importa mais, o CSS força ele a ocupar a tela do celular
 components.html(codigo_html, height=800, scrolling=False)
