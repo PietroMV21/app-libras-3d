@@ -3,10 +3,10 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página
+# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Função para carregar a logo
+# 2. Função para converter a logo
 def carregar_logo(caminho_arquivo):
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
@@ -127,7 +127,7 @@ codigo_html = """
         .menu-item:hover { background-color: #f0fdf4; color: #10b981; }
         .menu-item.active { background-color: #ecfdf5; color: #10b981; border-left: 4px solid #10b981; }
 
-        /* A CORREÇÃO DO BOTÃO DE INFO DO PC */
+        /* BOTÃO DE INFO DO PC */
         .btn-info-desktop {
             background: transparent;
             border: none;
@@ -142,7 +142,7 @@ codigo_html = """
             font-weight: 500;
             font-family: inherit;
             transition: all 0.2s;
-            margin-top: auto; /* Empurra para o fundo da barra lateral */
+            margin-top: auto; 
             border-top: 1px solid #e5e7eb;
             width: 100%;
             outline: none;
@@ -210,20 +210,23 @@ codigo_html = """
         .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
         .btn-modal-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;}
         
-        .btn-modal-secondary { 
-            background: transparent; 
-            color: #6b7280; 
-            border: 1px solid #d1d5db; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            cursor: pointer; 
+        /* NOVO ESTILO: CAIXA DO LINK EM TEXTO VISÍVEL */
+        .link-box {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #4b5563;
             text-align: center;
-            text-decoration: none; 
-            display: block; 
-            width: 100%;
+            word-wrap: break-word; /* Garante que o link não quebre a tela */
         }
-        .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
+        .link-box a {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .link-box a:hover { text-decoration: underline; }
 
         /* MODO CELULAR MÁGICO */
         @media (max-width: 768px) {
@@ -292,7 +295,12 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <button class="btn-modal-secondary" onclick="forcarLinkExterno()">Ler mais sobre o VLibras</button>
+                
+                <!-- O LINK VISÍVEL SOLICITADO -->
+                <div class="link-box">
+                    Ler mais em:<br>
+                    <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_blank">https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras</a>
+                </div>
             </div>
         </div>
     </div>
@@ -409,24 +417,6 @@ codigo_html = """
 
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
-
-        // A Correção da Intent para o Celular
-        function forcarLinkExterno() {
-            var url = 'https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras';
-            var isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-            
-            try {
-                if (isAndroid) {
-                    // A sintaxe correta da Intent Universal para navegadores (evita o bug da Play Store)
-                    var intentUrl = 'intent:' + url + '#Intent;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end;';
-                    window.location.href = intentUrl;
-                } else {
-                    window.open(url, '_blank');
-                }
-            } catch(e) {
-                console.error("Erro ao abrir link: ", e);
-            }
-        }
 
         function mudarAba(idAba, elementoClicado) {
             document.querySelectorAll('.aba-conteudo').forEach(aba => { aba.classList.remove('active'); });
