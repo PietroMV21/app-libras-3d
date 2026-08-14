@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
+# 1. Configuração da página
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
 # 2. Função para converter a logo
@@ -20,13 +20,11 @@ logo_html = carregar_logo("Logo_Libras.png")
 # INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
 st.markdown("""
     <style>
-        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
         .viewerBadge_container__1QSob { display: none !important; }
         
-        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             height: 100vh !important;
@@ -34,7 +32,6 @@ st.markdown("""
             padding: 0 !important;
         }
 
-        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
             position: fixed !important;
             top: 0 !important;
@@ -199,7 +196,19 @@ codigo_html = """
         .modal-text { font-size: 14px; color: #4b5563; line-height: 1.5; margin-bottom: 20px; }
         .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
         .btn-modal-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;}
-        .btn-modal-secondary { background: transparent; color: #6b7280; border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center;}
+        
+        /* O BOTÃO SECUNDÁRIO AGORA É UM BOTÃO REAL, NÃO UM LINK (a) */
+        .btn-modal-secondary { 
+            background: transparent; 
+            color: #6b7280; 
+            border: 1px solid #d1d5db; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-align: center;
+            width: 100%;
+        }
         .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
         /* MODO CELULAR MÁGICO */
@@ -216,7 +225,6 @@ codigo_html = """
 
             .logo-area { display: none; }
 
-            /* Ícone de Info no Celular - Fica flutuando no topo direito */
             .btn-info-mobile {
                 display: flex !important;
                 position: absolute;
@@ -232,13 +240,12 @@ codigo_html = """
             .menu-item.active { border-left: none; border-top: 3px solid #10b981; background-color: transparent; color: #10b981; }
 
             .aba-conteudo { padding: 15px 10px; }
-            .header-aba { padding-right: 40px; /* Evita que o título bata no botão info novo */ }
+            .header-aba { padding-right: 40px; }
             .chat-container { margin-bottom: 0; border-radius: 0; border-left: none; border-right: none; }
             .chat-inputs { flex-direction: column; padding: 10px; }
             .mensagem { max-width: 90%; }
         }
 
-        /* Oculta botão mobile no Desktop */
         .btn-info-mobile { display: none; }
 
     </style>
@@ -267,8 +274,8 @@ codigo_html = """
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal-primary" onclick="fecharModal()">Entendi</button>
-                <!-- AQUI ESTÁ A CORREÇÃO: target="_top" em vez de _blank -->
-                <a href="https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras" target="_top" class="btn-modal-secondary">Ler mais sobre o VLibras</a>
+                <!-- O LINK AGORA É UM BOTÃO QUE EXECUTA UMA FUNÇÃO JS -->
+                <button class="btn-modal-secondary" onclick="abrirLinkOficial()">Ler mais sobre o VLibras</button>
             </div>
         </div>
     </div>
@@ -379,9 +386,14 @@ codigo_html = """
     <script>
         new window.VLibras.Widget('https://vlibras.gov.br/app');
 
-        // FUNÇÕES DO MODAL (INFO)
+        // FUNÇÕES DO MODAL E DO LINK (Forçando abertura global)
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
+        
+        function abrirLinkOficial() {
+            // Este comando diz ao navegador/aplicativo para abrir o link na janela principal, furando iframes
+            window.open('https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras', '_top');
+        }
 
         function mudarAba(idAba, elementoClicado) {
             document.querySelectorAll('.aba-conteudo').forEach(aba => { aba.classList.remove('active'); });
