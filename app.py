@@ -3,10 +3,10 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# 1. Configuração da página: A logo agora também será o ícone da aba do navegador
+# 1. Configuração da página
 st.set_page_config(page_title="App Libras PRO", page_icon="Logo_Libras.png", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Função para converter a logo
+# 2. Função para carregar a logo
 def carregar_logo(caminho_arquivo):
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "rb") as arquivo:
@@ -20,13 +20,11 @@ logo_html = carregar_logo("Logo_Libras.png")
 # INJEÇÃO CSS NO STREAMLIT (A Trava Definitiva)
 st.markdown("""
     <style>
-        /* Oculta marcas d'água e menus do Streamlit */
         header { visibility: hidden !important; display: none !important; }
         footer { visibility: hidden !important; display: none !important; }
         #MainMenu { visibility: hidden !important; display: none !important; }
         .viewerBadge_container__1QSob { display: none !important; }
         
-        /* Mata a rolagem do sistema do Streamlit */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppScroll"] {
             overflow: hidden !important; 
             height: 100vh !important;
@@ -34,7 +32,6 @@ st.markdown("""
             padding: 0 !important;
         }
 
-        /* Tira o nosso app da caixa do Streamlit e gruda nas bordas do celular */
         iframe {
             position: fixed !important;
             top: 0 !important;
@@ -110,20 +107,11 @@ codigo_html = """
             gap: 12px;
         }
 
-        /* BOTÃO DE INFORMAÇÃO */
-        .btn-info {
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            padding: 5px;
+        .menu-items-container {
+            flex: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s;
+            flex-direction: column;
         }
-        .btn-info:hover { color: #10b981; background: #f3f4f6; }
 
         .menu-item {
             padding: 15px 25px;
@@ -138,6 +126,28 @@ codigo_html = """
         }
         .menu-item:hover { background-color: #f0fdf4; color: #10b981; }
         .menu-item.active { background-color: #ecfdf5; color: #10b981; border-left: 4px solid #10b981; }
+
+        /* A CORREÇÃO DO BOTÃO DE INFO DO PC */
+        .btn-info-desktop {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-top: auto; /* Empurra para o fundo da barra lateral */
+            border-top: 1px solid #e5e7eb;
+            width: 100%;
+            outline: none;
+        }
+        .btn-info-desktop:hover { color: #10b981; background-color: #f0fdf4; }
 
         /* ÁREA PRINCIPAL */
         .main-content {
@@ -211,6 +221,7 @@ codigo_html = """
             text-align: center;
             text-decoration: none; 
             display: block; 
+            width: 100%;
         }
         .btn-modal-secondary:hover { background: #f3f4f6; color: #374151; }
 
@@ -289,7 +300,9 @@ codigo_html = """
     <!-- BARRA LATERAL / INFERIOR -->
     <div class="sidebar">
         <div class="logo-area">
-            [[MARCADOR_LOGO]] LIBRAS Pro
+            <div class="logo-container">
+                [[MARCADOR_LOGO]] LIBRAS Pro
+            </div>
         </div>
         
         <div class="menu-items-container">
@@ -307,7 +320,7 @@ codigo_html = """
             </div>
         </div>
 
-        <!-- BOTÃO INFO (VISÍVEL SÓ NO DESKTOP - Canto inferior esquerdo) -->
+        <!-- BOTÃO INFO (VISÍVEL SÓ NO DESKTOP - Canto inferior esquerdo com CSS Restaurado) -->
         <button class="btn-info-desktop" onclick="abrirModal()" title="Sobre o Projeto">
             <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             <span>Sobre o Projeto</span>
@@ -397,18 +410,17 @@ codigo_html = """
         function abrirModal() { document.getElementById('infoModal').style.display = 'flex'; }
         function fecharModal() { document.getElementById('infoModal').style.display = 'none'; }
 
-        // MÁGICA ATUALIZADA: Usando Intent nativa para forçar a abertura no navegador do celular (Chrome, etc)
+        // A Correção da Intent para o Celular
         function forcarLinkExterno() {
             var url = 'https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras';
             var isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
             
             try {
                 if (isAndroid) {
-                    // Estrutura de "Intent" do Android que obriga o SO a abrir no navegador externo (fura o WebView)
-                    var intentUrl = 'intent://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/vlibras#Intent;scheme=https;action=android.intent.action.VIEW;end;';
+                    // A sintaxe correta da Intent Universal para navegadores (evita o bug da Play Store)
+                    var intentUrl = 'intent:' + url + '#Intent;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end;';
                     window.location.href = intentUrl;
                 } else {
-                    // Para PC e iPhone
                     window.open(url, '_blank');
                 }
             } catch(e) {
